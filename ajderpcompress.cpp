@@ -10,6 +10,7 @@ using namespace std;
 #include <cstdlib>
 #include <iterator>
 #include <vector>
+#include <stdint.h>
 #include <boost/dynamic_bitset.hpp>
 #include <boost/unordered_map.hpp>
 
@@ -24,17 +25,29 @@ bytesArray dynamic_bitset_to_bytes(Bitset bitset){
 
 Bitset convert_bytes_to_dynamic_bitset(int bitset_size, bytesArray bytes){
 	//revert values from bytes to dynamic bitset
-	Bitset bitset2(bitset_size);
+	Bitset bitset(bitset_size);
 	int bitcount=0;
 	for(int byteCount=0; byteCount<bytes.size(); ++byteCount) {
 		int mask=0x80;
 		for(int individualBit=8; individualBit>0;--individualBit) {
-			bitset2[(byteCount*8) + individualBit-1]=bytes[byteCount] & mask ? 1 : 0;
+			bitset[(byteCount*8) + individualBit-1]=bytes[byteCount] & mask ? 1 : 0;
 			mask >>= 1;
 		}
 		
 	}
-	return bitset2;
+	return bitset;
+}
+
+Bitset uint32_t_to_bitset(uint32_t number){
+	//revert values from bytes to dynamic bitset
+	Bitset bitset(32);
+	int bitcount=0;
+	uint32_t mask=0x80000000;
+	for(int individualBit=32; individualBit>0;--individualBit) {
+		bitset[individualBit-1]= number & mask ? 1 : 0;
+		mask >>= 1;
+	}
+	return bitset;
 }
 
 char version[4]="0.1";
@@ -52,7 +65,7 @@ void print_help() {
 }
 #include<string.h>
 int main(int argc, char *argv[]) {
-	typedef boost::unordered_map<std::string, double> CompressionHash;
+	typedef boost::unordered_map<std::string, uint32_t> CompressionHash;
 	char bits_param[3];
 	char dict_file_path[100];
 	char input_file_path[100];	
@@ -100,7 +113,7 @@ int main(int argc, char *argv[]) {
 		std::cout << "Reading dictionary.." << std::endl;
 		string line;
 		CompressionHash compressionhash;
-		double line_number=1;
+		uint32_t line_number=1;
 		
 		ifstream myfile (dict_file_path);
 		
@@ -115,6 +128,17 @@ int main(int argc, char *argv[]) {
 				std::cout << "Error: Unable to open dictionary file!!";
 				return 0;
 		}
+		Bitset max_bitset(32);
+		max_bitset = uint32_t_to_bitset(line_number);
+		std::cout <<  "Lines: " << line_number << " Maxmimum address value in bits: " << max_bitset << std::endl;
+		int bits=0;
+		for(int counter=32;counter>0;counter--) {
+			if(max_bitset[counter]==1) {
+				bits=counter+1;
+				break;
+			}
+		}
+		std::cout <<  "Bits per word in dictionary: " << bits << std::endl;	
 		std::cout << "Opening input file..." << std::endl;
 		//this is where the work needs to be done
 		std::cout << "google at line:" << compressionhash.at("google") << std::endl;
