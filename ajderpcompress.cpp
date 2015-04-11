@@ -141,7 +141,13 @@ int main(int argc, char *argv[]) {
 		std::cout <<  "Bits per word in dictionary: " << bits << std::endl;	
 		std::cout << "Opening input file..." << std::endl;
 		//this is where the work needs to be done
-		std::cout << "google at line:" << compressionhash.at("google") << std::endl;
+		//next probably need to come up with all the bit scheme to encode pucntuation and offsets if uncompressable
+	    try {
+	      std::cout << "google at line:" << compressionhash.at("google") << std::endl;
+	    }
+		catch(std::exception const&  ex){
+		    std::cout << "Exception:" << ex.what();
+		}
 		std::cout << "Compression complete!" << std::endl;
 		return 0;
 	}
