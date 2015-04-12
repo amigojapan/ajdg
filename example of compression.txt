@@ -1,0 +1,36 @@
+Google is great. That’s a great cup of tea. Usmar’s compression algorithm is good! +*}+>?>+*+}*>?>}}*}*>?>}*} Plurals are also interesting. (indexes shown in decimal, but stored in binary amount of maximum bits calculated by the program for this dictionary)
+
+index	punctuation? 	capital		space	next compressible
+64483	0			1			1		1			-> “Google “
+index	punctuation? 	capital		space	next compressible
+82307	0			0			1		1			-> “is “
+index	punctuation? 	6bits punct	capital		space		next compressible
+65291	1		011100(28)”.”	0			1		1	-> “great. “
+index	punctuation? 	6bits punct	capital		space		next compressible
+161109	1			”’s”			1			1		1	-> “That’s “
+index	punctuation? 	capital		space	next compressible
+85	0			0			1		1			-> “a “
+index	punctuation? 	capital		space	next compressible
+65291	0			0			1		1			-> “great “
+index	punctuation? 	capital		space	next compressible
+37747	0			0			1		1			-> “cup “
+index	punctuation? 	capital		space	next compressible
+113681	0			0			1		1			-> “of “
+index	punctuation? 	6bits punct	capital		space		next compressible	offset
+159716	1			011100(28)”.”	0			1		0				9	-> “tea. “
+index	punctuation? 	capital		space	next compressible
+33390	0			0			1		1			-> “compression “
+index	punctuation? 	capital		space	next compressible
+4101	0			0			1		1			-> “algorithm “
+index	punctuation? 	capital		space	next compressible
+82307	0			0			1		1			-> “is “
+index	punctuation? 	6bits punct	capital		space		next compressible	offset
+64436	1			”!”			0			1		0				28	-> “good! “
+index	punctuation? 	6bits punct	capital		space		next compressible
+122422	1			”s”			1			1		1	-> “Plurals “
+index	punctuation? 	capital		space	next compressible
+9240	0			0			1		1			-> “are “
+index	punctuation? 	capital		space	next compressible
+5057	0			0			1		1			-> “also “
+index	punctuation? 	6bits punct	capital		space		next compressible
+80831	1			011100(28)”.”	0			1		1	-> “interesting. “

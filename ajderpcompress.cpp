@@ -17,6 +17,8 @@ using namespace std;
 // Make the block size one byte
 typedef boost::dynamic_bitset<unsigned char> Bitset;
 typedef std::vector<unsigned char> bytesArray;
+typedef boost::unordered_map<std::string, uint32_t> CompressionHash;
+
 bytesArray dynamic_bitset_to_bytes(Bitset bitset){
     bytesArray bytes;
     boost::to_block_range(bitset, std::back_inserter(bytes));	
@@ -63,9 +65,20 @@ void print_help() {
 	std::cout << std::endl << "To extract" << std::endl;
 	std::cout << std::endl << "ajdg -x -b bits -d path to dictionary -i input file.ajdg -o outpupt file" << std::endl;
 }
+/*
+void try_this(CompressionHash *compressionhash, string str){
+    try {
+      std::cout << str << " at line:" << compressionhash.at(str) << std::endl;
+    }
+	catch(std::exception const&  ex){
+	    //std::cout << "Exception:" << ex.what();
+		std::cout << str << " not found!" << std::endl;
+	}
+}
+*/
+#define try_this(str) try{std::cout << str << " at line:" << compressionhash.at(str) << std::endl;}catch(std::exception const&  ex){std::cout << str << " not found!" << std::endl;}
 #include<string.h>
 int main(int argc, char *argv[]) {
-	typedef boost::unordered_map<std::string, uint32_t> CompressionHash;
 	char bits_param[3];
 	char dict_file_path[100];
 	char input_file_path[100];	
@@ -142,16 +155,31 @@ int main(int argc, char *argv[]) {
 		std::cout << "Opening input file..." << std::endl;
 		//this is where the work needs to be done
 		//next probably need to come up with all the bit scheme to encode pucntuation and offsets if uncompressable
-	    try {
-	      std::cout << "google at line:" << compressionhash.at("google") << std::endl;
-	    }
-		catch(std::exception const&  ex){
-		    std::cout << "Exception:" << ex.what();
-		}
+		
+		//Google is great. That’s a great cup of tea. Usmar’s compression algorithm is good! +*}+>?>+*+}*>?>}}*}*>?>}*} Plurals are also interesting.
+		try_this("google")
+		try_this("is")
+		try_this("great")
+		try_this("that")
+		try_this("a")
+		try_this("great")	
+		try_this("cup")
+		try_this("of")
+		try_this("tea")
+		try_this("compression")
+		try_this("algorithm")
+		try_this("is")	
+		try_this("good")
+		try_this("plural")
+		try_this("are")
+		try_this("also")
+		try_this("interesting")
+		
 		std::cout << "Compression complete!" << std::endl;
 		return 0;
 	}
-	
+
+/*	
     Bitset bitset(40); // 40 bits
 
     // Assign random bits
@@ -171,4 +199,5 @@ int main(int argc, char *argv[]) {
 	
 	std::cout << "bitset1: " << bitset << std::endl;
 	std::cout << "bitset2: " << bitset2 << std::endl;
+*/
 }
