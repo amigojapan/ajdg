@@ -1,0 +1,146 @@
+ compression
+
+we keep 15 bits for index to an external idctionary file, and a couple of bis to keep the state of flags about the words,  like “are they spaced, do they start with capitals, is the next character encoded or not?”  that is basically the whole encryption alto
+
+maybe 14 bits index, 2 bits flags (4 states)
+
+amigojapan:derpson: that should not make much of a difference , as far as I understand, the contest also allows us to use other compression algorythms… so I think we can recompress with something else after our compression, with a pattern matching compression alto
+
+cat enwik8 | xargs -n1 | sort | uniq -c > result
+
+derpson:would be no problem with 3 bytes (22 bit index), but then the question is whether it might be more efficient to use 2 bytes (14 bit index)
+[01:04am]derpson:the most quick version would be to make a dictionary separating by spaces "cat enwik8 | tr " " "\n" | sort | uniq" and then work with 3 bytes
+[01:06am]derpson:i mean, we could theoretically work with fractional bytes, too
+[01:09am]derpson:if you know what i mean. have n bits per word, n-2 for the index, write the file by grouping these bits into 8-bit bytes
+
+hmmm, well I redid cat enwik8 | xargs -n1 | sort | uniq -c > result
+cat enwik8 | tr " " "\n”  | sort | uniq | wc -l
+get rid of punctuation
+1440451
+http://stackoverflow.com/questions/8297913/how-do-i-convert-bitset-to-array-of-bytes-uint8/9081167#9081167
+
+dictionary generation:
+make all words lower case
+change spaces to newlines
+
+get rid of numbers
+LC_ALL=C sed s/[0-9]//g
+
+get rid of all non alphabetic symbols
+sed s/[^a-zA-Z[:space:]]//g
+
+get rid of ’s 
+LC_ALL=C sed "s/'s//g"
+
+get rid of all punctuations
+LC_ALL=C sed s/[[:punct:]]//g
+
+get rid of all the final s in all the words
+LC_ALL=C s/s$//g
+
+sort and make unique
+word count 
+
+add “ ‘ ( [as words in dictionary (later)
+add a range of important dates, say from about 1700 to 2015(probably want more for the real release) (later)
+
+
+cat enwik8 | sed s/[^a-zA-Z[:space:]]//g | awk '{ print tolower($0) }'  | LC_ALL=C tr " " "\n" | LC_ALL=C sed s/[0-9]//g |  LC_ALL=C sed "s/'s//g" | LC_ALL=C sed s/[[:punct:]]//g | LC_ALL=C sed s/s$//g | LC_ALL=C sort | LC_ALL=C uniq -d > result
+
+180598 words
+
+cat enwik8 | awk '{ print tolower($0) }'  | LC_ALL=C tr " " "\n” | LC_ALL=C sed "s/'s//g” | LC_ALL=C tr -d '[:punct:]’ | LC_ALL=C sed 's/[s]*$//‘ | LC_ALL=C sort | LC_ALL=C uniq | LC_ALL=C wc -l
+
+add punctuation encodings after words, like "hello"    the initial “ would be a word in the dictionary, the second “ 
+plurals (or all words that end in s) in punctuation
+’s as  punctuation
+
+amigojapan derpson greg file compression specification:
+cat enwik8 | awk '{ print tolower($0) }'  | LC_ALL=C tr " " "\n"  | LC_ALL=C sort | LC_ALL=C uniq | LC_ALL=C wc -l
+
+1358029
+1358029 unique results, in binary 1358029 is 1 0100 1011 1000 1100 1101, which means we can address it in 21 bits.  adding the 3 bits for the state flags, (7 states), this should be a total of 24 bits for each word…   off the top of my head I would say the flags should  mean this
+states:
+
+hmmm, maybe we should allow for variable address space, where the user can indicate the number of bits of address space he wants to allocate for the dictionary (first thing when the program winds, it would need to count the words in the dictionary to see if the amount of bits given would be enough to address that dictionary)  but this would allow for flexibility in making smaller or larger dictionaries depending on the needs, maybe a small dictionary with few address bits may be better, or a large dictionary with many address bit might be better…   this would allow for fine running of these settings.(or this value jocund be automatically generated from the amount of words in the dictionary). but for speed,  passing it in as an argument means not needing to count the lines of the dictionary
+
+*00 space after word, non capital first letter
+*01 space after word, capital first letter
+*10 comma after word, non capital first letter
+*11 comma after word, capital first letter
+punctuation codes
+0** next byte is not compressed(the following 2 bytes will be the offset to the next compressed data) then the uncompressed data will follow
+1** next 24bits represent compressed data
+
+
+also, here is my idea for a header:
+header: encoded-dictionary-filename,checksum, position of first compressed data(first data could be non compressible)
+
+maybe store the offset from the current bit to the next compressed data in the same data…. this can’t be too long though.
+
+….compressed data,uncompressible flag,offset:3bytesABCcompressed data,uncompressible flag,offset:5ABCDEF.compressed data
+
+if the offset is more than 2 bytes long, we can more or less say this file is not very compressible, and is probably not mostly plain text
+hmmm, if there is only one word, it may be better not to compress it, it may end up larger with all the data to jump to the next word, I will need to think about this…
+
+but this should actually be calculable, if the bytes of the word are < the end result of the compression bytes of the next word, then don’t compress...
+
+
+boost dynamic bitset bytes converter 2 way
+http://pastebin.com/5SYsjtfZ
+compile flags for boost:
+clang++ ajderpcompress.cpp -I /opt/local/include/
+run parameters:
+./a.out -c -b 16 -d enwik8dict.d -i test -o test
+
+
+hmmm,  special documents could contain  kind of tags which indicate where compressed data begins and where it ends….  possibly develop a layer of text compression for faster network speeds? and lower server side storage needs...
+
+ending punctuations
+punctuation["\\"]="back slash"
+punctuation["!"]="exclamation mark"
+punctuation["#"]="hash"
+punctuation["$"]="dollar"
+punctuation["%"]="percent"
+punctuation["&"]="and sign"
+punctuation["'"]="single quote"
+punctuation["\""]="quote"
+punctuation["("]="open parenthesis"
+punctuation[")"]="close parenthesis"
+punctuation["-"]="minus"
+punctuation["="]="equal"
+punctuation["^"]="carrot"
+punctuation["~"]="tilde"
+punctuation["¥"]="Yen"
+punctuation["|"]="or sign"
+punctuation["@"]="at"
+punctuation["`"]="back tick"
+punctuation["["]="open bracket"
+punctuation["]"]="close bracket"
+punctuation["{"]="open curly brace"
+punctuation["}"]="close curly brace"
+punctuation[";"]="semi colon"
+punctuation[":"]="colon"
+punctuation["+"]="plus"
+punctuation["*"]="asterisk"
+punctuation[","]="comma"
+punctuation["."]="dot"
+punctuation[">"]="more than"
+punctuation["<"]="less than"
+punctuation["/"]="foward slash"
+punctuation["?"]="question mark"
+punctuation["_"]=“underscore”
+‘s
+s
+1 bit for knowing if there is punctuation or not
+total 35 need 6 bits to address punctuation
+1 bit for if next bite is compressible or not, if not, then:12 bits for offset which is 4095 characters, which is A WHOLE BUNCH,  the program should say the file is incompressible if this offset is not enough.
+1 bit for capitalization
+1 bit for space or not after puctuation
+
+hmmm, it seems for very short words like “a” “is” or “are” it may be better not to compress them.   this could be achieved by adding a bit for 1 “next word is short” and the following a small offset that could be up to 3 or 4 , which might save space since it would be just 1 for short word then the few bits needed to address 3 or 4 bits of offset. I should how much is the maximum worth doing for this…. also eliminate shuck short words from the dictionary. 
+a word with no punctuation and no offset is 22 bits (3bytes-1bit)
+a word with punctuation and no offset it 28 bits (4 bytes-3 bits)
+a word with no punctuation and offset is 22+12= 33 bits
+a word with punctuation and offset is 28+12=40 bits
+there is also the fact that even small words still have spaces and punctuation usually, so storing them in non compressed format adds a byte for space and a byte for punctuation…. so the word “is “ would take up 3 bytes which is a little more than a word with no punctuation and no offset.   I don’t think I will implement this at least at first because of the complexity of calculating the optimum way to do it.
