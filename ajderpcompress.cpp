@@ -122,6 +122,47 @@ int main(int argc, char *argv[]) {
 		print_help();
 		return 0;
 	}
+	//ending punctuations
+	typedef boost::unordered_map<int, std::string> Punct_Map_Decode;
+	typedef boost::unordered_map<std::string, int> Punct_Map_Encode;
+	Punct_Map_Encode punct_map_encode;
+	Punct_Map_Decode punct_map_decode;
+	#define make_punct_map(symbol,index) punct_map_encode[symbol]=index; punct_map_decode[index]=symbol;
+	make_punct_map("\\",0) //"back slash"
+	make_punct_map("!",1) //"exclamation mark"
+	make_punct_map("#",2) //"hash"
+	make_punct_map("$",3) //"dollar"
+	make_punct_map("%",4) //"percent"
+	make_punct_map("&",5) //"and sign"
+	make_punct_map("'",6) //"single quote"
+	make_punct_map("\"",7) //"quote"
+	make_punct_map("(",8) //"open parenthesis"
+	make_punct_map(")",9) //"close parenthesis"
+	make_punct_map("-",10) //"minus"
+	make_punct_map("=",11) //"equal"
+	make_punct_map("^",12) //"carrot"
+	make_punct_map("~",13) //"tilde"
+	make_punct_map("¥",14) //"Yen"
+	make_punct_map("|",15) //"or sign"
+	make_punct_map("@",16) //"at"
+	make_punct_map("`",17) //"back tick"
+	make_punct_map("[",18) //"open bracket"
+	make_punct_map("]",19) //"close bracket"
+	make_punct_map("{",20) //"open curly brace"
+	make_punct_map("}",21) //"close curly brace"
+	make_punct_map(";",22) //"semi colon"
+	make_punct_map(":",23) //"colon"
+	make_punct_map("+",24) //"plus"
+	make_punct_map("*",25) //"asterisk"
+	make_punct_map(",",26) //"comma"
+	make_punct_map(".",27) //"dot"
+	make_punct_map(">",28) //"more than"
+	make_punct_map("<",29) //"less than"
+	make_punct_map("/",30) //"foward slash"
+	make_punct_map("?",31) //"question mark"
+	make_punct_map("_",32) //“underscore”
+	make_punct_map("‘s",33) // posserive
+	make_punct_map("s",34)  // plural	
 	if(compress_mode) {
 		std::cout << "Reading dictionary.." << std::endl;
 		string line;
@@ -154,8 +195,27 @@ int main(int argc, char *argv[]) {
 		std::cout <<  "Bits per word in dictionary: " << bits << std::endl;	
 		std::cout << "Opening input file..." << std::endl;
 		//this is where the work needs to be done
-		//next probably need to come up with all the bit scheme to encode pucntuation and offsets if uncompressable
+		//begin compression
+		//Find first compressable data, store offset(later)(save it in file already?)
+		//Setp1:find next punctuation or space.
+		//find a word in dictionary between next punct or space and beginning of string.
+		//if not found, not compressible, goto Step1
+		//find index of compressible word in dictionary
+		//convert index to index_bitset
+		//if the word ends in space, set first flag of flags_bitset to 0, otherwise set it to 1 bit0, and store the punctuation value binary in puct_bitset
+		//see if the word is capital, store in flags_bitset bit1
+		//if the word did not end in a space, check to see if the next character next to the "punctuation" is a space, if it is, store in flags_bitset bit2
+		//check if the next word is compressible(should make a function to find out), if it is not, store in flags_bitset bit3 then seek the next compressible word, get the offset...
+			//if offset is more than MAX_OFFSET then exit gracefully, else,covert offset to binary and store in offset_bitset
+		//clip the file string to be the next compressible portion and what is left over
+		//concatenate bitsets
+		//define compressed_bitset as a dynamic bitset
+		//append to compressed_bitset
+		//repeat until end of file
+		//convert compressed_bitset using dynamic_bitset_to_bytes(Bitset bitset)
+		//save file
 		
+				
 		//Google is great. That’s a great cup of tea. Usmar’s compression algorithm is good! +*}+>?>+*+}*>?>}}*}*>?>}*} Plurals are also interesting.
 		try_this("google")
 		try_this("is")

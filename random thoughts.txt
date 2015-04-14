@@ -97,41 +97,46 @@ run parameters:
 hmmm,  special documents could contain  kind of tags which indicate where compressed data begins and where it ends….  possibly develop a layer of text compression for faster network speeds? and lower server side storage needs...
 
 ending punctuations
-punctuation["\\"]="back slash"
-punctuation["!"]="exclamation mark"
-punctuation["#"]="hash"
-punctuation["$"]="dollar"
-punctuation["%"]="percent"
-punctuation["&"]="and sign"
-punctuation["'"]="single quote"
-punctuation["\""]="quote"
-punctuation["("]="open parenthesis"
-punctuation[")"]="close parenthesis"
-punctuation["-"]="minus"
-punctuation["="]="equal"
-punctuation["^"]="carrot"
-punctuation["~"]="tilde"
-punctuation["¥"]="Yen"
-punctuation["|"]="or sign"
-punctuation["@"]="at"
-punctuation["`"]="back tick"
-punctuation["["]="open bracket"
-punctuation["]"]="close bracket"
-punctuation["{"]="open curly brace"
-punctuation["}"]="close curly brace"
-punctuation[";"]="semi colon"
-punctuation[":"]="colon"
-punctuation["+"]="plus"
-punctuation["*"]="asterisk"
-punctuation[","]="comma"
-punctuation["."]="dot"
-punctuation[">"]="more than"
-punctuation["<"]="less than"
-punctuation["/"]="foward slash"
-punctuation["?"]="question mark"
-punctuation["_"]=“underscore”
-‘s
-s
+typedef boost::unordered_map<int, std::string> Punct_Map_Decode;
+typedef boost::unordered_map<std::string, int> Punct_Map_Encode;
+Punct_Map_Encode punct_map_encode;
+Puct_Map_Decode punct_map_decode;
+#define make_punct_map(symbol,index) punct_map_encode[symbol]=index; punct_map_decode[index]=symbol;
+make_punct_map("\\"],0) //"back slash"
+make_punct_map("!"],1) //"exclamation mark"
+make_punct_map("#"],2) //"hash"
+make_punct_map("$"],3) //"dollar"
+make_punct_map("%"],4) //"percent"
+make_punct_map("&"],5) //"and sign"
+make_punct_map("'"],6) //"single quote"
+make_punct_map("\""],7) //"quote"
+make_punct_map("("],8) //"open parenthesis"
+make_punct_map(")"],9) //"close parenthesis"
+make_punct_map("-"],10) //"minus"
+make_punct_map("="],11) //"equal"
+make_punct_map("^"],12) //"carrot"
+make_punct_map("~"],13) //"tilde"
+make_punct_map("¥"],14) //"Yen"
+make_punct_map("|"],15) //"or sign"
+make_punct_map("@"],16) //"at"
+make_punct_map("`"],17) //"back tick"
+make_punct_map("["],18) //"open bracket"
+make_punct_map("]"],19) //"close bracket"
+make_punct_map("{"],20) //"open curly brace"
+make_punct_map("}"],21) //"close curly brace"
+make_punct_map(";"],22) //"semi colon"
+make_punct_map(":"],23) //"colon"
+make_punct_map("+"],24) //"plus"
+make_punct_map("*"],25) //"asterisk"
+make_punct_map(","],26) //"comma"
+make_punct_map("."],27) //"dot"
+make_punct_map(">"],28) //"more than"
+make_punct_map("<"],29) //"less than"
+make_punct_map("/"],30) //"foward slash"
+make_punct_map("?"],31) //"question mark"
+make_punct_map("_"],32) //“underscore”
+make_punct_map("‘s",33) // posserive
+make_punct_map("s",34)  // plural
 1 bit for knowing if there is punctuation or not
 total 35 need 6 bits to address punctuation
 1 bit for if next bite is compressible or not, if not, then:12 bits for offset which is 4095 characters, which is A WHOLE BUNCH,  the program should say the file is incompressible if this offset is not enough.
