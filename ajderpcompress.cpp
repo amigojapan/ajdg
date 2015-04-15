@@ -195,11 +195,18 @@ int main(int argc, char *argv[]) {
 		std::cout <<  "Bits per word in dictionary: " << bits << std::endl;	
 		std::cout << "Opening input file..." << std::endl;
 		//this is where the work needs to be done
-		//begin compression
+		//Begin compression
+		//Read in file to compress
 		//Find first compressable data, store offset(later)(save it in file already?)
 		//Setp1:find next punctuation or space.
 		//find a word in dictionary between next punct or space and beginning of string.
+			//find first pucntuation mark in file location
+			//find if the next letter is a space, store if so in boolean
+			//clip string up to location of punct or space
+			//find if there is a dictionary word between punct or space, if not this is all non compressible, save string length as offset_to_first_compressible_word
+			//find the offset of the beginning of the word, save the offset in offset_to_first_compressible_word
 		//if not found, not compressible, goto Step1
+		//(possible improvement in the future),decide if leace a 1 2 or 3 letter word uncompressed and put an offset to the next compressible word
 		//find index of compressible word in dictionary
 		//convert index to index_bitset
 		//if the word ends in space, set first flag of flags_bitset to 0, otherwise set it to 1 bit0, and store the punctuation value binary in puct_bitset
@@ -210,6 +217,7 @@ int main(int argc, char *argv[]) {
 		//clip the file string to be the next compressible portion and what is left over
 		//concatenate bitsets
 		//define compressed_bitset as a dynamic bitset
+		//convert offset_to_first_compressible_word to offset_to_first_compressible_word_bitset
 		//append to compressed_bitset
 		//repeat until end of file
 		//convert compressed_bitset using dynamic_bitset_to_bytes(Bitset bitset)
