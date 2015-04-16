@@ -32,7 +32,6 @@ bytesArray dynamic_bitset_to_bytes(Bitset bitset){
 Bitset convert_bytes_to_dynamic_bitset(int bitset_size, bytesArray bytes){
 	//revert values from bytes to dynamic bitset
 	Bitset bitset(bitset_size);
-	int bitcount=0;
 	for(int byteCount=0; byteCount<bytes.size(); ++byteCount) {
 		int mask=0x80;
 		for(int individualBit=8; individualBit>0;--individualBit) {
@@ -47,7 +46,6 @@ Bitset convert_bytes_to_dynamic_bitset(int bitset_size, bytesArray bytes){
 Bitset uint32_t_to_bitset(uint32_t number){
 	//revert values from bytes to dynamic bitset
 	Bitset bitset(32);
-	int bitcount=0;
 	uint32_t mask=0x80000000;
 	for(int individualBit=32; individualBit>0;--individualBit) {
 		bitset[individualBit-1]= number & mask ? 1 : 0;
@@ -82,15 +80,12 @@ void find_next_punctation(string input_file_string,Punct_Map_Encode punct_map_en
 		uint32_t position_found_min=999999;
 		uint32_t file_len;
 		string punctuation_found="";
-		file_len=input_file_string.length();
-		for(uint32_t char_pos=0;char_pos<file_len;char_pos++) {
-			BOOST_FOREACH(Punct_Map_Encode::value_type pair, punct_map_encode) {
-				position_found = input_file_string.find(pair.first);
-				if(position_found) {
-					if(position_found<position_found_min) {
-						position_found_min=position_found;
-						punctuation_found=pair.first;
-					}
+		BOOST_FOREACH(Punct_Map_Encode::value_type pair, punct_map_encode) {
+			position_found = (uint32_t)input_file_string.find(pair.first);
+			if(position_found) {
+				if(position_found<position_found_min) {
+					position_found_min=position_found;
+					punctuation_found=pair.first;
 				}
 			}
 		}
@@ -188,7 +183,7 @@ int main(int argc, char *argv[]) {
 	make_punct_map("/",30) //"foward slash"
 	make_punct_map("?",31) //"question mark"
 	make_punct_map("_",32) //“underscore”
-	make_punct_map("‘s",33) // posserive
+	make_punct_map("’s",33) // posserive
 	make_punct_map("s",34)  // plural
 	make_punct_map(" ",35)  // space
 		
@@ -209,7 +204,7 @@ int main(int argc, char *argv[]) {
 			myfile.close();
 			} else {
 				std::cout << "Error: Unable to open dictionary file!!" << std::endl;
-				return 0;
+				return 1;
 			}
 		Bitset max_bitset(32);
 		max_bitset = uint32_t_to_bitset(line_number);
@@ -236,7 +231,7 @@ int main(int argc, char *argv[]) {
 			myfile.close();
 			} else {
 				std::cout << "Error: Unable to open input file!!" << std::endl;
-				return 0;
+				return 1;
 			}
 			std::cout << input_file_string << '\n';
 			//Find first compressable data, store first_offset(later)(save it in file already?)
@@ -251,7 +246,7 @@ int main(int argc, char *argv[]) {
 			//if not found, next not compressible, offset to end of file.
 			uint32_t offset=0;
 			if(obj_pos_punct.pos==999999) {
-				offset=input_file_string.length();//not found
+				offset=(uint32_t)input_file_string.length();//not found
 				//***todo:terminate compression here goto end_of_compression;
 			}
 			if(offset>=MAX_OFFSET) {
@@ -260,11 +255,17 @@ int main(int argc, char *argv[]) {
 			}
 			
 			bool space=false;
+            bool apostophe_s=false;
 			if(obj_pos_punct.punctuation==" ") space=true;
+            if(obj_pos_punct.punctuation=="’s") apostophe_s=true;
 			std::cout << "space:" << space << std::endl;
 			//check to see if next char in input_file_string is space, if so set next_space boolean to true
-			bool next_space;
+			bool next_space=false;
 			if(!space&&input_file_string.at(obj_pos_punct.pos+1)==' ') next_space=true;
+            if(apostophe_s&&input_file_string.at(obj_pos_punct.pos+4)==' ') {
+                next_space=true;
+            }
+        
 			std::cout << "next space:" << next_space << std::endl;
 			//clip string up to location of punct or space and store in working_string
 			string working_string;
@@ -272,8 +273,13 @@ int main(int argc, char *argv[]) {
 				//this should be achieved by feeding each combination of letters left in the string to the hashmap, cause this is much faster than looping thru the hashmap
 			//find the offset of the beginning of the word, save the offset in offset_to_first_compressible_word
 			working_string=input_file_string.substr(0,obj_pos_punct.pos);
+            //**if the working string is a pucntuation mark(or non ASCII), add to the offset until we find the next compressible
 			//clip input_file_string so that it no longer includes working_string, this is done for the next time around looking at the words
-			input_file_string=input_file_string.substr(obj_pos_punct.pos+1,input_file_string.length());
+            int stride=1;
+            if(space) stride=1;
+            if(apostophe_s) stride=4;
+            if(next_space) stride+=1;
+            input_file_string=input_file_string.substr(obj_pos_punct.pos+stride,input_file_string.length());
 			//convert string to lower case, keep possible_uppercase_copy, so we can later chack if the word is upper case
 			string possible_uppercase_copy;
 			possible_uppercase_copy=working_string;
