@@ -6,10 +6,10 @@ Usage: ajdg [-v} version [-h] help
 
 To compress:
 
-ajdg -c -b bits -d path to dictionary -i input file -o outpupt file.ajdg
+ajdg -c -d path to dictionary -i input file -o outpupt file.ajdg
 
 To extract
 
-ajdg -x -b bits -d path to dictionary -i input file.ajdg -o outpupt file
+ajdg -x -d path to dictionary -i input file.ajdg -o outpupt file
 
 please note that ajdg is as of yet a work in progress

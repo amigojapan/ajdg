@@ -14,7 +14,7 @@ using namespace std;
 #include <boost/dynamic_bitset.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/foreach.hpp>
-
+#include <boost/algorithm/string.hpp> 
 // Make the block size one byte
 typedef boost::dynamic_bitset<unsigned char> Bitset;
 typedef std::vector<unsigned char> bytesArray;
@@ -64,9 +64,9 @@ void print_version() {
 void print_help() {
 	std::cout << std::endl << "Usage: ajdg [-v} version [-h] help" << std::endl;
 	std::cout << std::endl << "To compress:" << std::endl; 
-	std::cout << std::endl << "ajdg -c -b bits -d path to dictionary -i input file -o outpupt file.ajdg" << std::endl;
+	std::cout << std::endl << "ajdg -c -d path to dictionary -i input file -o outpupt file.ajdg" << std::endl;
 	std::cout << std::endl << "To extract" << std::endl;
-	std::cout << std::endl << "ajdg -x -b bits -d path to dictionary -i input file.ajdg -o outpupt file" << std::endl;
+	std::cout << std::endl << "ajdg -x -d path to dictionary -i input file.ajdg -o outpupt file" << std::endl;
 }
 typedef struct pos_punct {
    uint32_t pos;
@@ -111,7 +111,6 @@ void try_this(CompressionHash *compressionhash, string str){
 #define find_hash(str) try{line_number=compressionhash.at(str);found=true;}catch(std::exception const&  ex){line_number=999999;found=false;}
 #include<string.h>
 int main(int argc, char *argv[]) {
-	char bits_param[3];
 	char dict_file_path[100];
 	char input_file_path[100];	
 	char output_file_path[100];	
@@ -119,9 +118,6 @@ int main(int argc, char *argv[]) {
 	bool compress_mode=false;
 	bool extract_mode=false;
 	for (int nArg=0; nArg < argc; nArg++) {
-		if(strcmp(argv[nArg],"-b")== 0) {
-			sprintf(bits_param,"%s", argv[nArg+1]);
-		}
 		if(strcmp(argv[nArg],"-d")== 0) {
 			sprintf(dict_file_path,"%s", argv[nArg+1]);
 		}
@@ -148,7 +144,7 @@ int main(int argc, char *argv[]) {
 		}		
 	}
 
-	if(strcmp(bits_param,"") == 0||strcmp(dict_file_path,"") == 0||strcmp(input_file_path,"") == 0||strcmp(output_file_path,"") == 0||!(compress_mode||extract_mode)) {
+	if(strcmp(dict_file_path,"") == 0||strcmp(input_file_path,"") == 0||strcmp(output_file_path,"") == 0||!(compress_mode||extract_mode)) {
 		std::cout << std::endl << "Error in command parameters!!" << std::endl;
 		print_version();
 		print_help();
@@ -260,7 +256,14 @@ int main(int argc, char *argv[]) {
 			std::cout << "next space:" << next_space << std::endl;
 			//clip string up to location of punct or space and store in working_string
 			string working_string;
-			working_string=input_file_string.substr (0,obj_pos_punct.pos);
+			//find if there is a dictionary word between punct or space, if not this is all non compressible, save string length as offset_to_first_compressible_word
+				//this should be achieved by feeding each combination of letters left in the string to the hashmap, cause this is much faster than looping thru the hashmap
+			//find the offset of the beginning of the word, save the offset in offset_to_first_compressible_word
+			working_string=input_file_string.substr(0,obj_pos_punct.pos);
+			//convert string to lower case, keep possible_uppercase_copy, so we can later chack if the word is upper case
+			string possible_uppercase_copy;
+			possible_uppercase_copy=working_string;
+			boost::algorithm::to_lower(working_string);
 			std::cout << "working string:" << working_string << std::endl;
 			line_number=9999999;
 			bool found=false;
@@ -268,15 +271,13 @@ int main(int argc, char *argv[]) {
 			while(!found) {//***Also deal with words that are not in the dinctionaty!!!
 				find_hash(working_string)
 				if(found) break;
-				working_string=working_string.substr (1,working_string.length());
+				working_string=working_string.substr(1,working_string.length());
 				offset++;
 			}
-			//previous thing is finding oogle, how to prevent this? do I need to loop thru the whole dictionary after all?
+			//seems this was fixed with using tolower...***previous thing is finding oogle, how to prevent this? do I need to loop thru the whole dictionary after all?
 			std::cout << "found in dictionary:" << found << " line number in dictionary:" << line_number << " offset:" << offset <<std::endl;
-				//convert string to lower case, keep possible_uppercase_copy, so we can later chack if the word is upper case
-				//find if there is a dictionary word between punct or space, if not this is all non compressible, save string length as offset_to_first_compressible_word
-					//this should be achieved by feeding each combination of letters left in the string to the hashmap, cause this is much faster than looping thru the hashmap
-				//find the offset of the beginning of the word, save the offset in offset_to_first_compressible_word
+			
+			//**look to see if the string was upper case, and store the result in a bool
 		
 		//Setp1:find next punctuation or space.
 		//if not found, not compressible, goto Step1
