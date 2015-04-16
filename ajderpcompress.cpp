@@ -21,6 +21,7 @@ typedef std::vector<unsigned char> bytesArray;
 typedef boost::unordered_map<std::string, uint32_t> CompressionHash;
 typedef boost::unordered_map<int, std::string> Punct_Map_Decode;
 typedef boost::unordered_map<std::string, int> Punct_Map_Encode;
+#define MAX_OFFSET 4095
 
 bytesArray dynamic_bitset_to_bytes(Bitset bitset){
     bytesArray bytes;
@@ -77,8 +78,8 @@ struct_pos_punct obj_pos_punct;
 void find_next_punctation(string input_file_string,Punct_Map_Encode punct_map_encode) {
 	//find a word in dictionary between next punct or space and beginning of string.
 		//find first pucntuation mark in file location
-		uint32_t position_found=9999;
-		uint32_t position_found_min=9999;
+		uint32_t position_found=999999;
+		uint32_t position_found_min=999999;
 		uint32_t file_len;
 		string punctuation_found="";
 		file_len=input_file_string.length();
@@ -238,14 +239,25 @@ int main(int argc, char *argv[]) {
 				return 0;
 			}
 			std::cout << input_file_string << '\n';
-		//Find first compressable data, store first_offset(later)(save it in file already?)
+			//Find first compressable data, store first_offset(later)(save it in file already?)
 			//find a word in dictionary between next punct or space and beginning of string.
+			//find next punctuation or space.
+			step1:
 			find_next_punctation(input_file_string,punct_map_encode);
 			std::cout << "pos:" << obj_pos_punct.pos << "punctuation mark:\"" << obj_pos_punct.punctuation << "\"" << std::endl;
 				//find if the next letter is a space, store if so in boolean
 			
 			//deal with not found and end of file, or offset being too long
-			//***yet to be done***
+			//if not found, next not compressible, offset to end of file.
+			uint32_t offset=0;
+			if(obj_pos_punct.pos==999999) {
+				offset=input_file_string.length();//not found
+				//***todo:terminate compression here goto end_of_compression;
+			}
+			if(offset>=MAX_OFFSET) {
+				std::cout << "ERROR: this file has more than a " << MAX_OFFSET << " stride of uncompressible characters, this file is probably not mostly text, ajdg cannot compress it!" << std::endl;
+				return 1;
+			}
 			
 			bool space=false;
 			if(obj_pos_punct.punctuation==" ") space=true;
@@ -260,6 +272,8 @@ int main(int argc, char *argv[]) {
 				//this should be achieved by feeding each combination of letters left in the string to the hashmap, cause this is much faster than looping thru the hashmap
 			//find the offset of the beginning of the word, save the offset in offset_to_first_compressible_word
 			working_string=input_file_string.substr(0,obj_pos_punct.pos);
+			//clip input_file_string so that it no longer includes working_string, this is done for the next time around looking at the words
+			input_file_string=input_file_string.substr(obj_pos_punct.pos+1,input_file_string.length());
 			//convert string to lower case, keep possible_uppercase_copy, so we can later chack if the word is upper case
 			string possible_uppercase_copy;
 			possible_uppercase_copy=working_string;
@@ -267,22 +281,31 @@ int main(int argc, char *argv[]) {
 			std::cout << "working string:" << working_string << std::endl;
 			line_number=9999999;
 			bool found=false;
-			int offset=0;
+			offset=0;
+			//find index of compressible word in dictionary
 			while(!found) {//***Also deal with words that are not in the dinctionaty!!!
 				find_hash(working_string)
 				if(found) break;
 				working_string=working_string.substr(1,working_string.length());
 				offset++;
 			}
+			if(offset>=MAX_OFFSET) {
+				std::cout << "ERROR: this file has more than a " << MAX_OFFSET << " stride of uncompressible characters, this file is probably not mostly text, ajdg cannot compress it!" << std::endl;
+				return 1;
+			}
 			//seems this was fixed with using tolower...***previous thing is finding oogle, how to prevent this? do I need to loop thru the whole dictionary after all?
 			std::cout << "found in dictionary:" << found << " line number in dictionary:" << line_number << " offset:" << offset <<std::endl;
 			
 			//**look to see if the string was upper case, and store the result in a bool
-		
-		//Setp1:find next punctuation or space.
-		//if not found, not compressible, goto Step1
+			bool was_uppercase=false;
+			char ch = possible_uppercase_copy.at(offset);//get the character that could be uppercase or not,store in ch
+			//if(ch >= 'A' && ch <= 'Z') was_uppercase=true;//check to see if the character is uppercase
+			if(isupper(ch)) was_uppercase=true;//check to see if the character is uppercase
+			std::cout << "possible_uppercase_copy.at(offset):\"" << possible_uppercase_copy.at(offset) << "\" possible_uppercase_copy:\"" << possible_uppercase_copy << "\" was uppercase:" << was_uppercase << std::endl;
+			goto step1;//next word!
 		//(possible improvement in the future),decide if leace a 1 2 or 3 letter word uncompressed and put an offset to the next compressible word
-		//find index of compressible word in dictionary
+		end_of_compression:
+		//operations to generate bitset for current word
 		//convert index to index_bitset
 		//if the word ends in space, set first flag of flags_bitset to 0, otherwise set it to 1 bit0, and store the punctuation value binary in puct_bitset
 		//see if the word is capital, store in flags_bitset bit1
