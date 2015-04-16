@@ -73,24 +73,33 @@ typedef struct pos_punct {
 } struct_pos_punct;
 struct_pos_punct obj_pos_punct;
 
-void find_next_punctation(string input_file_string,Punct_Map_Encode punct_map_encode) {
+void find_next_punctation(string search_string,Punct_Map_Encode punct_map_encode) {
 	//find a word in dictionary between next punct or space and beginning of string.
 		//find first pucntuation mark in file location
 		uint32_t position_found=999999;
 		uint32_t position_found_min=999999;
-		uint32_t file_len;
+        bool found_plural=false;
+        bool found_space=false;
 		string punctuation_found="";
 		BOOST_FOREACH(Punct_Map_Encode::value_type pair, punct_map_encode) {
-			position_found = (uint32_t)input_file_string.find(pair.first);
-			if(position_found) {
+			position_found = (uint32_t)search_string.find(pair.first);//Done:modify so it only finds the final "s" of a word! maybe change "s" to "s "
+			if(position_found!=999999) {
+                if(position_found==position_found_min) {
+                    if(pair.first=="s ") found_plural=true;
+                    if(pair.first=="s ") found_space=true;
+                }
 				if(position_found<position_found_min) {
 					position_found_min=position_found;
 					punctuation_found=pair.first;
 				}
 			}
 		}
-		obj_pos_punct.pos=position_found_min;
-		obj_pos_punct.punctuation=punctuation_found;		
+        obj_pos_punct.pos=position_found_min;
+        if((found_plural&&found_space)&&(punctuation_found=="s "||punctuation_found==" ")) {
+            obj_pos_punct.punctuation="s ";
+            return;
+        }
+		obj_pos_punct.punctuation=punctuation_found;
 }
 /*
 void try_this(CompressionHash *compressionhash, string str){
@@ -184,7 +193,7 @@ int main(int argc, char *argv[]) {
 	make_punct_map("?",31) //"question mark"
 	make_punct_map("_",32) //“underscore”
 	make_punct_map("’s",33) // posserive
-	make_punct_map("s",34)  // plural
+	make_punct_map("s ",34)  // plural
 	make_punct_map(" ",35)  // space
 		
 	if(compress_mode) {
@@ -256,7 +265,9 @@ int main(int argc, char *argv[]) {
 			
 			bool space=false;
             bool apostophe_s=false;
+            bool plural=false;
 			if(obj_pos_punct.punctuation==" ") space=true;
+            if(obj_pos_punct.punctuation=="s ") plural=true;
             if(obj_pos_punct.punctuation=="’s") apostophe_s=true;
 			std::cout << "space:" << space << std::endl;
 			//check to see if next char in input_file_string is space, if so set next_space boolean to true
@@ -273,13 +284,23 @@ int main(int argc, char *argv[]) {
 				//this should be achieved by feeding each combination of letters left in the string to the hashmap, cause this is much faster than looping thru the hashmap
 			//find the offset of the beginning of the word, save the offset in offset_to_first_compressible_word
 			working_string=input_file_string.substr(0,obj_pos_punct.pos);
-            //**if the working string is a pucntuation mark(or non ASCII), add to the offset until we find the next compressible
-			//clip input_file_string so that it no longer includes working_string, this is done for the next time around looking at the words
+            //***if the working string is a pucntuation mark(***or non ASCII), add to the offset until we find the next compressible
+            int position;
+            position=obj_pos_punct.pos;
+            obj_pos_punct.punctuation="";
+            find_next_punctation(working_string,punct_map_encode);
+            int uncompressible_offset=0;
+            if(obj_pos_punct.punctuation!="") {
+                uncompressible_offset++;
+                goto step1;
+            }
+            //clip input_file_string so that it no longer includes working_string, this is done for the next time around looking at the words
             int stride=1;
             if(space) stride=1;
             if(apostophe_s) stride=4;
             if(next_space) stride+=1;
-            input_file_string=input_file_string.substr(obj_pos_punct.pos+stride,input_file_string.length());
+            if(plural) stride=2;
+            input_file_string=input_file_string.substr(position+stride,input_file_string.length());
 			//convert string to lower case, keep possible_uppercase_copy, so we can later chack if the word is upper case
 			string possible_uppercase_copy;
 			possible_uppercase_copy=working_string;
