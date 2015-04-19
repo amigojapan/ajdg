@@ -73,6 +73,18 @@ typedef struct pos_punct {
 } struct_pos_punct;
 struct_pos_punct obj_pos_punct;
 
+typedef struct compressed_strcucture {
+    uint32_t index;
+    bool punctuation;
+    bool capital;
+    string punctuation_string="none";
+    bool space;
+    bool next_compressible=true;
+    uint8_t offset=0;
+    string word;//for debugging purposes
+} struct_compressed;
+std::vector<struct_compressed> compressed_data_array;
+
 void find_next_punctation(string search_string,Punct_Map_Encode punct_map_encode) {
 	//find a word in dictionary between next punct or space and beginning of string.
 		//find first pucntuation mark in file location
@@ -247,6 +259,11 @@ int main(int argc, char *argv[]) {
 			//find a word in dictionary between next punct or space and beginning of string.
 			//find next punctuation or space.
 			step1:
+            //add a member to the compressed data array
+            struct_compressed new_element;
+            compressed_data_array.insert(compressed_data_array.end(), new_element);
+        
+            bool next_compressible=true;
             //if end of file goto end_compression
             if(input_file_string=="") return 2;//goto end_compression;
             //***if the working string is a pucntuation mark(***or non ASCII), add to the offset until we find the next compressible
@@ -256,11 +273,17 @@ int main(int argc, char *argv[]) {
             char first_char;
             //**find next compressible
             first_char=input_file_string.at(0);
-            if((obj_pos_punct.punctuation!=""&&obj_pos_punct.pos==0)||first_char=='\n') {
+            if((obj_pos_punct.punctuation!=""&&obj_pos_punct.pos==0)||first_char=='\n') {//if first chat is punctation or newline
+                next_compressible=false;
                 uncompressible_offset++;
                 input_file_string=input_file_string.substr(1,input_file_string.length());
+                //set the previous element's offset and non compressible flag
+                unsigned long next_to_last = compressed_data_array.size()-1;
+                compressed_data_array.at(next_to_last).next_compressible=false;
+                compressed_data_array.at(next_to_last).offset=uncompressible_offset;
                 goto step1;
             }
+            uncompressible_offset=0;
 
 			find_next_punctation(input_file_string,punct_map_encode);
 			std::cout << "pos:" << obj_pos_punct.pos << "punctuation mark:\"" << obj_pos_punct.punctuation << "\"" << std::endl;
@@ -305,7 +328,20 @@ int main(int argc, char *argv[]) {
             if(apostophe_s) stride=4;
             if(next_space) stride+=1;
             if(plural) stride=2;
-            if(obj_pos_punct.pos==999999) return 3;//no more puctuation ***handle this
+            if(obj_pos_punct.pos==999999) {
+                //debug by itterating over array and printing otu the data in it
+                printf("index\t\tpunctuation?\t\tpunct\t\tcapital\t\tspace\t\tnext_compressible\t\toffset\n");
+                for(int element=0;element<compressed_data_array.size();element++)
+                    cout << compressed_data_array.at(element).index << "\t\t" <<
+                            compressed_data_array.at(element).punctuation << "\t\t" <<
+                            compressed_data_array.at(element).punctuation_string << "\t\t" <<
+                            compressed_data_array.at(element).capital << "\t\t" <<
+                            compressed_data_array.at(element).space << "\t\t" <<
+                            compressed_data_array.at(element).next_compressible << "\t\t" <<
+                            compressed_data_array.at(element).offset << "\t\t" <<
+                            " -> " << compressed_data_array.at(element).word << endl;
+                return 3;//no more puctuation ***handle this
+            }
             input_file_string=input_file_string.substr(obj_pos_punct.pos+stride,input_file_string.length());
 			//convert string to lower case, keep possible_uppercase_copy, so we can later chack if the word is upper case
 			string possible_uppercase_copy;
@@ -334,6 +370,12 @@ int main(int argc, char *argv[]) {
 			//if(ch >= 'A' && ch <= 'Z') was_uppercase=true;//check to see if the character is uppercase
 			if(isupper(ch)) was_uppercase=true;//check to see if the character is uppercase
 			std::cout << "possible_uppercase_copy.at(offset):\"" << possible_uppercase_copy.at(offset) << "\" possible_uppercase_copy:\"" << possible_uppercase_copy << "\" was uppercase:" << was_uppercase << std::endl;
+            //add the data we need to the array
+            compressed_data_array.at(compressed_data_array.size()-1).index=line_number;
+            compressed_data_array.at(compressed_data_array.size()-1).punctuation=obj_pos_punct.punctuation==" "?false:true;
+            compressed_data_array.at(compressed_data_array.size()-1).capital=was_uppercase;
+            compressed_data_array.at(compressed_data_array.size()-1).space=space||next_space;
+            compressed_data_array.at(compressed_data_array.size()-1).word=possible_uppercase_copy;
 			goto step1;//next word!
 		//(possible improvement in the future),decide if leace a 1 2 or 3 letter word uncompressed and put an offset to the next compressible word
         
