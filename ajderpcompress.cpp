@@ -373,6 +373,7 @@ int main(int argc, char *argv[]) {
             //add the data we need to the array
             compressed_data_array.at(compressed_data_array.size()-1).index=line_number;
             compressed_data_array.at(compressed_data_array.size()-1).punctuation=obj_pos_punct.punctuation==" "?false:true;
+            compressed_data_array.at(compressed_data_array.size()-1).punctuation_string=obj_pos_punct.punctuation==" "?"none":obj_pos_punct.punctuation;
             compressed_data_array.at(compressed_data_array.size()-1).capital=was_uppercase;
             compressed_data_array.at(compressed_data_array.size()-1).space=space||next_space;
             compressed_data_array.at(compressed_data_array.size()-1).word=possible_uppercase_copy;
