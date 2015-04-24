@@ -73,7 +73,7 @@ typedef struct pos_punct {
 } struct_pos_punct;
 struct_pos_punct obj_pos_punct;
 
-typedef struct compressed_strcucture {
+typedef struct compressed_structure {
     uint32_t index;
     bool punctuation;
     bool capital;
@@ -175,7 +175,7 @@ int main(int argc, char *argv[]) {
 	make_punct_map("!",1) //"exclamation mark"
 	make_punct_map("#",2) //"hash"
 	make_punct_map("$",3) //"dollar"
-	make_punct_map("%",4) //"percent"
+	make_punct_map("\%",4) //"percent"
 	make_punct_map("&",5) //"and sign"
 	make_punct_map("'",6) //"single quote"
 	make_punct_map("\"",7) //"quote"
@@ -266,7 +266,7 @@ int main(int argc, char *argv[]) {
                 //***if the working string is a pucntuation mark(***or non ASCII), add to the offset until we find the next compressible
                 obj_pos_punct.punctuation="";
                 find_next_punctation(input_file_string,punct_map_encode);
-                int uncompressible_offset=0;
+                uint8_t uncompressible_offset=0;
                 char first_char;
                 //**find next compressible
                 first_char=input_file_string.at(0);
@@ -302,16 +302,16 @@ int main(int argc, char *argv[]) {
                 }
                 
                 bool space=false;
-                bool apostophe_s=false;
+                bool apostrophe_s=false;
                 bool plural=false;
                 if(obj_pos_punct.punctuation==" ") space=true;
                 if(obj_pos_punct.punctuation=="s ") plural=true;
-                if(obj_pos_punct.punctuation=="’s") apostophe_s=true;
+                if(obj_pos_punct.punctuation=="’s") apostrophe_s=true;
                 std::cout << "space:" << space << std::endl;
                 //check to see if next char in input_file_string is space, if so set next_space boolean to true
                 bool next_space=false;
                 if(obj_pos_punct.pos!=999999&&!space&&input_file_string.at(obj_pos_punct.pos+1)==' ') next_space=true;
-                if(apostophe_s&&input_file_string.at(obj_pos_punct.pos+4)==' ') {
+                if(apostrophe_s&&input_file_string.at(obj_pos_punct.pos+4)==' ') {
                     next_space=true;
                 }
             
@@ -325,7 +325,7 @@ int main(int argc, char *argv[]) {
                 //clip input_file_string so that it no longer includes working_string, this is done for the next time around looking at the words
                 int stride=1;
                 if(space) stride=1;
-                if(apostophe_s) stride=4;
+                if(apostrophe_s) stride=4;
                 if(next_space) stride+=1;
                 if(plural) stride=2;
                 if(obj_pos_punct.pos==999999) {
@@ -338,7 +338,7 @@ int main(int argc, char *argv[]) {
                                 compressed_data_array.at(element).capital << "\t\t" <<
                                 compressed_data_array.at(element).space << "\t\t" <<
                                 compressed_data_array.at(element).next_compressible << "\t\t" <<
-                                compressed_data_array.at(element).offset << "\t\t" <<
+                                (unsigned int) compressed_data_array.at(element).offset << "\t\t" <<
                                 " -> " << compressed_data_array.at(element).word << endl;
                     return 3;//no more puctuation ***handle this
                 }
