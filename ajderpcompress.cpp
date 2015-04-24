@@ -259,6 +259,7 @@ int main(int argc, char *argv[]) {
 			//find a word in dictionary between next punct or space and beginning of string.
 			//find next punctuation or space.
 			//step1:
+            int uncompressible_offset=0;
             while(true) {
                 bool next_compressible=true;
                 //if end of file goto end_compression
@@ -266,7 +267,6 @@ int main(int argc, char *argv[]) {
                 //***if the working string is a pucntuation mark(***or non ASCII), add to the offset until we find the next compressible
                 obj_pos_punct.punctuation="";
                 find_next_punctation(input_file_string,punct_map_encode);
-                uint8_t uncompressible_offset=0;
                 char first_char;
                 //**find next compressible
                 first_char=input_file_string.at(0);
@@ -278,7 +278,6 @@ int main(int argc, char *argv[]) {
                     unsigned long next_to_last = compressed_data_array.size()-1;
                     compressed_data_array.at(next_to_last).next_compressible=false;
                     compressed_data_array.at(next_to_last).offset=uncompressible_offset;
-                    //goto step1;
                     continue;
                 }
                 uncompressible_offset=0;
@@ -357,6 +356,9 @@ int main(int argc, char *argv[]) {
                     if(found) break;
                     working_string=working_string.substr(1,working_string.length());
                     offset++;
+                    unsigned long next_to_last = compressed_data_array.size()-1;
+                    compressed_data_array.at(next_to_last).next_compressible=false;
+                    compressed_data_array.at(next_to_last).offset=offset;
                 }
                 if(offset>=MAX_OFFSET) {
                     std::cout << "ERROR: this file has more than a " << MAX_OFFSET << " stride of uncompressible characters, this file is probably not mostly text, ajdg cannot compress it!" << std::endl;
@@ -376,7 +378,7 @@ int main(int argc, char *argv[]) {
                 compressed_data_array.at(compressed_data_array.size()-1).punctuation_string=obj_pos_punct.punctuation==" "?"none":obj_pos_punct.punctuation;
                 compressed_data_array.at(compressed_data_array.size()-1).capital=was_uppercase;
                 compressed_data_array.at(compressed_data_array.size()-1).space=space||next_space;
-                compressed_data_array.at(compressed_data_array.size()-1).word=possible_uppercase_copy;
+                compressed_data_array.at(compressed_data_array.size()-1).word=working_string;
 			//goto step1;//next word!
             }
 		//(possible improvement in the future),decide if leace a 1 2 or 3 letter word uncompressed and put an offset to the next compressible word
