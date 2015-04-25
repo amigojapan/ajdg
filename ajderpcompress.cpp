@@ -260,8 +260,14 @@ int main(int argc, char *argv[]) {
 			//find next punctuation or space.
 			//step1:
             int uncompressible_offset=0;
+            bool first_loop=true;
             while(true) {
                 bool next_compressible=true;
+                //if(!first_loop) {
+                 //   unsigned long next_to_last = compressed_data_array.size()-1;
+                
+                //}
+                //first_loop=false;
                 //if end of file goto end_compression
                 if(input_file_string=="") return 2;//goto end_compression;
                 //***if the working string is a pucntuation mark(***or non ASCII), add to the offset until we find the next compressible
@@ -283,6 +289,7 @@ int main(int argc, char *argv[]) {
                 uncompressible_offset=0;
                 //add a member to the compressed data array
                 struct_compressed new_element;
+                new_element.next_compressible=true;
                 compressed_data_array.insert(compressed_data_array.end(), new_element);
                 find_next_punctation(input_file_string,punct_map_encode);
                 std::cout << "pos:" << obj_pos_punct.pos << "punctuation mark:\"" << obj_pos_punct.punctuation << "\"" << std::endl;
