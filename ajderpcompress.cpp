@@ -246,7 +246,9 @@ int main(int argc, char *argv[]) {
 		string input_file_string="";
 		if (myfile.is_open()){
 			while ( getline (myfile,line) ){
-				input_file_string += line + "\n";				
+				input_file_string += line + "\n";
+                //derpson: ifstream file; file.open(filename); std::string word; file >> word;
+                //[5:10pm] derpson: std::ifstream xD sorry
 				//std::cout << line << '\n';
 			}
 			myfile.close();
