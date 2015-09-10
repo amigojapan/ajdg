@@ -1,2 +1,3 @@
 Google is great. That’s google a great cup of tea. Usmar’s compression algorithm is good! +*}+>?>+*+}*>?>}}*}*>?>}*} Plurals are also interesting.
-newline
+Google.
+Newline
