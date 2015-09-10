@@ -487,6 +487,16 @@ int main(int argc, char *argv[]) {
                     found=false;
                 }
                 */
+                //why not just do  line_number=compressionhash[working_string];what happens when it is not found?? what was I thinking?
+
+                if(compressionhash[working_string]==0) {
+                    line_number=999999;
+                    found=false;
+                } else {
+                    line_number=compressionhash[working_string];
+                    found=true;
+                }
+                /*
                 boost::unordered_map<std::string, uint32_t>::const_iterator got = compressionhash.find (working_string);
                 
                 if ( got == compressionhash.end() ) {
@@ -497,6 +507,7 @@ int main(int argc, char *argv[]) {
                     line_number=got->second;
                     found=true;
                 }
+                 */
                  //weird, when this executes it modifyies the value of a variable that is not mentioned in this macro... why?
                 //input_file_string=input_file_string_backup;
                 //memcpy ( &input_file_string, &input_file_string_backup, sizeof(input_file_string_backup) );
