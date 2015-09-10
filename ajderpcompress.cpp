@@ -488,7 +488,7 @@ int main(int argc, char *argv[]) {
                 }
                 */
                 //why not just do  line_number=compressionhash[working_string];what happens when it is not found?? what was I thinking?
-
+                /*
                 if(compressionhash[working_string]==0) {
                     line_number=999999;
                     found=false;
@@ -496,7 +496,17 @@ int main(int argc, char *argv[]) {
                     line_number=compressionhash[working_string];
                     found=true;
                 }
+                */
                 /*
+                 amigojapan: karelina: would .find(index) actually loop thu the whole unordered map? if it doesnt, it seemed to work withought causing the bug.... but if so, it is not a good alternative
+                 [01:50am] karelina: I don't see why find would be any slower than at
+                 also. it seems that value=map[index]; would create a new item if it does not exist... so .find() seems better after all
+                 amigojapan: karelina: the whole reason why I used a hastable instead of an array was so I would not need to loop thru the array item by item each time...  what do you call it? O(something)
+
+                 [01:56am] amigojapan: karelina: at least I assume that when I use value=map[index]; that is does not loop thru the whole datastructure to find index....
+                 karelina: amigojapan: the performance for at(), find() and operator[] is the same in any case. but as I said, O(1) average, O(n) worst case :P
+                 [01:57am] amigojapan: ok karelina , thanks
+                */
                 boost::unordered_map<std::string, uint32_t>::const_iterator got = compressionhash.find (working_string);
                 
                 if ( got == compressionhash.end() ) {
@@ -507,7 +517,7 @@ int main(int argc, char *argv[]) {
                     line_number=got->second;
                     found=true;
                 }
-                 */
+                
                  //weird, when this executes it modifyies the value of a variable that is not mentioned in this macro... why?
                 //input_file_string=input_file_string_backup;
                 //memcpy ( &input_file_string, &input_file_string_backup, sizeof(input_file_string_backup) );
@@ -932,5 +942,6 @@ int main(int argc, char *argv[]) {
 */
 
 }
+//cout seems to be slowing thinsg down, try adding a --verbose option and only displaying stuff when it is on
 //maybe use shorter bites like unicode does for ascii and longer for the more obscure words
 //make a ducrionary using word count from enwiki8
