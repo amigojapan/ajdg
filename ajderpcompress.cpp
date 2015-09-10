@@ -286,7 +286,7 @@ int main(int argc, char *argv[]) {
 	make_punct_map("?",31) //"question mark"
 	make_punct_map("_",32) //“underscore”
 	make_punct_map("’s",33) // posserive
-	make_punct_map("s ",34)  // plural
+	make_punct_map("s",34)  // plural
 	make_punct_map(" ",35)  // space
 	make_punct_map("\n",36)  // newline
 	if(compress_mode) {
@@ -427,6 +427,7 @@ int main(int argc, char *argv[]) {
                     //this should be achieved by feeding each combination of letters left in the string to the hashmap, cause this is much faster than looping thru the hashmap
                 //find the offset of the beginning of the word, save the offset in offset_to_first_compressible_word
                 working_string=input_file_string.substr(0,obj_pos_punct.pos);
+                string working_string_with_punctuation=input_file_string.substr(0,obj_pos_punct.pos+1);
                 //clip input_file_string so that it no longer includes working_string, this is done for the next time around looking at the words
                 int stride=1;
                 if(space) stride=1;
@@ -471,11 +472,12 @@ int main(int argc, char *argv[]) {
                     }
                 }
                 */
-                if (working_string=="13th") {
+                if (working_string=="tear") {
                     
                     ;
                 }
-                next_word://I know this is a total dirty hack, hell! go with goto!
+                //next_word://I know this is a total dirty hack, hell! go with goto! GREAT WAS ABLE TO NOT USE GOTO!
+                /*
                 try{
                     line_number=compressionhash.at(working_string);
                     found=true;
@@ -484,13 +486,30 @@ int main(int argc, char *argv[]) {
                     line_number=999999;
                     found=false;
                 }
+                */
+                boost::unordered_map<std::string, uint32_t>::const_iterator got = compressionhash.find (working_string);
                 
+                if ( got == compressionhash.end() ) {
+                    line_number=999999;
+                    found=false;
+                } else {
+                    //std::cout << got->first << " is " << got->second;
+                    line_number=got->second;
+                    found=true;
+                }
                  //weird, when this executes it modifyies the value of a variable that is not mentioned in this macro... why?
                 //input_file_string=input_file_string_backup;
                 //memcpy ( &input_file_string, &input_file_string_backup, sizeof(input_file_string_backup) );
                 //delete input_file_string_backup;
                 
                 if(!found) {
+                    uncompressible_offset=(int)working_string_with_punctuation.length();
+                    uncompressable_characters_string+=working_string_with_punctuation;
+                    unsigned long next_to_last = compressed_data_array.size()-1;
+                    compressed_data_array.at(next_to_last).next_compressible=false;
+                    compressed_data_array.at(next_to_last).offset=uncompressible_offset;
+                    continue;
+                        /*
                         uncompressible_offset++;
                         uncompressable_characters_string+=input_file_string.substr(0,1);
                         input_file_string=input_file_string.substr(1,input_file_string.length());
@@ -502,6 +521,7 @@ int main(int argc, char *argv[]) {
                             working_string=input_file_string.substr(0,found);
                         }else{ break;}
                         goto next_word;
+                        */
                 }
                 if (working_string=="13th") {
                     ;
@@ -844,8 +864,12 @@ int main(int argc, char *argv[]) {
             }
         }
             //std::couindex	uint32_t	index	uint32_t	64483	64483index	uint32_t	128967	12896716507849	16507849t << c;
-        cout<<"output string:"<<output_string;
         is.close();                // close file
+        cout<<"output string:"<<output_string;
+        ofstream outputfile;
+        outputfile.open ("output.txt");
+        outputfile << output_string;
+        outputfile.close();
         /*
         Bitset b(8*2);
         b[15]=1;
